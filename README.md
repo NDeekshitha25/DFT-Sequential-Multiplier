@@ -1,30 +1,30 @@
 # DFT-Aware Sequential Shift-and-Add Multiplier
 
-An 8-bit Sequential Shift-and-Add Multiplier implemented in Verilog with **Design for Testability (DFT)** enhancements, including **Integrated Clock Gating (ICG)**, **clock controllability**, **full scan chain insertion**, and a **DFT-aware verification testbench**.
+An **8-bit Sequential Shift-and-Add Multiplier** implemented in **Verilog HDL** with **Design for Testability (DFT)** enhancements. The design incorporates **Integrated Clock Gating (ICG)** for low-power operation, **clock controllability**, **full scan chain insertion**, and a **DFT-aware verification environment** for manufacturing test support.
 
 ---
 
-## Overview
+## Project Overview
 
-This project extends a conventional sequential multiplier by incorporating industry-standard DFT techniques used in ASIC design. The implementation demonstrates how functional RTL can be modified to improve testability while preserving functional behavior and reducing dynamic power through clock gating.
+This project extends a conventional sequential multiplier by integrating industry-standard DFT techniques commonly used in ASIC design flows. The objective is to maintain functional correctness while improving testability and reducing dynamic power consumption through clock gating.
 
-### Key Features
+### Features
 
-* 8-bit Sequential Shift-and-Add Multiplier
-* FSM-based Controller
-* Integrated Clock Gating (ICG)
-* Test Mode Clock Gate Bypass
-* Full 32-bit Scan Chain
-* Scan Shift and Capture Operations
-* At-Speed Capture Support
-* DFT-Aware RTL Design
-* Comprehensive Verification Testbench
+- 8-bit Sequential Shift-and-Add Multiplier
+- FSM-Based Controller
+- Integrated Clock Gating (ICG)
+- Test Mode Clock Gate Bypass
+- Full 32-Bit Scan Chain
+- Scan Shift and Capture Operations
+- At-Speed Capture Support
+- DFT-Compliant RTL Design
+- Comprehensive Verification Testbench
 
 ---
 
-## Design Architecture
+# Design Architecture
 
-The design consists of the following modules:
+The complete RTL design is organized into the following modules:
 
 ```
 rtl/
@@ -35,39 +35,57 @@ rtl/
 └── seq_multiplier.v
 ```
 
-### Module Description
+## Module Description
 
-| Module             | Description                                                         |
-| ------------------ | ------------------------------------------------------------------- |
-| `ICG.v`            | Integrated Clock Gate with test bypass                              |
-| `controller.v`     | FSM controlling multiplier operations                               |
-| `mult_regs.v`      | Registers for Accumulator (A), Multiplicand (M), and Multiplier (Q) |
-| `bit_counter.v`    | Clock-gated counter with scan support                               |
-| `seq_multiplier.v` | Top-level integration of datapath, controller, and scan chain       |
-
----
-
-## DFT Enhancements
-
-### Clock Controllability
-
-The original clock-gated counter prevented scan operations when `count_en` was low.
-
-The solution introduces an **Integrated Clock Gate (ICG)** with a **test_mode** input that bypasses functional clock gating during manufacturing test.
-
-```
-Functional Mode:
-clk ──► ICG(enable=count_en) ──► Counter
-
-Test Mode:
-clk ──► ICG(test_enable=1) ──► Counter
-```
+| Module | Description |
+|---------|-------------|
+| `ICG.v` | Integrated Clock Gate (ICG) with functional enable and test bypass |
+| `controller.v` | Finite State Machine controlling multiplier operations |
+| `mult_regs.v` | Datapath registers containing Accumulator (A), Multiplicand (M), and Multiplier (Q) |
+| `bit_counter.v` | Clock-gated counter with scan support |
+| `seq_multiplier.v` | Top-level integration of datapath, controller, scan chain, and DFT signals |
 
 ---
 
-### Scan Chain
+# Design for Testability (DFT)
 
-A full scan chain is inserted across all sequential elements.
+## Clock Controllability
+
+The original implementation gated the counter clock using `count_en`, preventing scan operations whenever the counter was disabled.
+
+The modified design introduces an **Integrated Clock Gate (ICG)** that supports **test_mode**, allowing the clock gate to be bypassed during manufacturing test.
+
+### Functional Mode
+
+```
+clk
+ │
+ ▼
+ICG (enable = count_en)
+ │
+ ▼
+Bit Counter
+```
+
+### Test Mode
+
+```
+clk
+ │
+ ▼
+ICG (test_enable = 1)
+ │
+ ▼
+Bit Counter
+```
+
+This ensures complete clock controllability without affecting functional timing.
+
+---
+
+## Full Scan Chain
+
+All sequential elements are connected into a single serial scan chain.
 
 ```
 scan_in
@@ -95,120 +113,128 @@ scan_out
 
 ---
 
-## Scan Operation
+# Operating Modes
 
-### Functional Mode
+## Functional Mode
 
 ```
-test_mode  = 0
+test_mode   = 0
 scan_enable = 0
 ```
 
-* Clock gating enabled
-* Normal multiplication
-* Low-power operation
+- Clock gating enabled
+- Normal multiplier operation
+- Low dynamic power consumption
 
 ---
 
-### Scan Shift Mode
+## Scan Shift Mode
 
 ```
-test_mode  = 1
+test_mode   = 1
 scan_enable = 1
 ```
 
-* Clock gate bypassed
-* Registers load scan data
-* Full scan controllability
+- Clock gate bypassed
+- Serial scan data shifted into registers
+- Full scan controllability
 
 ---
 
-### Capture Mode
+## Capture Mode
 
 ```
-test_mode  = 1
+test_mode   = 1
 scan_enable = 0
 ```
 
-* Clock gate bypassed
-* One functional clock applied
-* Functional response captured for ATPG
+- Clock gate bypassed
+- One functional clock applied
+- Functional response captured for ATPG
 
 ---
 
-## Verification
+# Verification
 
-The DFT-aware testbench verifies both functional correctness and scan functionality.
+A DFT-aware testbench validates both functional correctness and scan functionality.
 
-### Test Cases
+## Test C1 – Functional Verification
 
-### Test C1 – Functional Verification
-
-* 13 × 11 multiplication
-* Product verified as **143**
-* Clock gating behavior monitored
-* Power savings measured using gated clock activity
+- Perform multiplication **13 × 11**
+- Verify product = **143**
+- Monitor gated clock activity
+- Measure clock gating effectiveness
 
 ---
 
-### Test C2 – Scan Shift Test
+## Test C2 – Scan Shift Verification
 
-* Shift 32-bit scan pattern
-* Verify all registers receive correct values
-* Confirm scan works even when `count_en = 0`
-
----
-
-### Test C3 – Shift–Capture–Shift
-
-* Shift ATPG pattern
-* Apply one capture clock
-* Shift captured response out
-* Compare against expected response
+- Enable test mode
+- Shift a complete 32-bit scan pattern
+- Verify all scan registers
+- Confirm scan operation with `count_en = 0`
 
 ---
 
-### Test C4 – At-Speed Capture
+## Test C3 – Shift–Capture–Shift
 
-* Load counter through scan chain
-* Apply one functional clock
-* Verify counter increment
-* Verify `last` assertion
-* Demonstrate identical timing in functional and test modes
+- Shift ATPG pattern into scan chain
+- Apply one capture clock
+- Shift captured response out
+- Compare with expected golden response
 
 ---
 
-## Simulation
+## Test C4 – At-Speed Capture
 
-### Compile (Icarus Verilog)
+- Load counter through scan chain
+- Apply one functional capture clock
+- Verify counter increment
+- Verify `last` signal assertion
+- Demonstrate identical timing behavior in both functional and test modes
+
+---
+
+# Simulation
+
+## Compile (Icarus Verilog)
 
 ```bash
-iverilog -o sim rtl/*.v tb/tb_seq_multiplier_dft.v
+iverilog -o multiplier_sim rtl/*.v tb/tb_seq_multiplier_dft.v
 ```
 
-### Run
+## Run Simulation
 
 ```bash
-vvp sim
+vvp multiplier_sim
 ```
 
-### View Waveforms
+## View Waveforms
 
 ```bash
-gtkwave seq_mult_dft.vcd
+gtkwave vcd/seq_mult_dft.vcd
 ```
+
+or
+
+```bash
+gtkwave vcd/multiplier_tb_gtk.vcd
+```
+
+The waveform dump (`.vcd`) files are included in this repository to allow direct inspection of simulation results using GTKWave.
 
 ---
 
-## Repository Structure
+# Repository Structure
 
 ```
 DFT-Sequential-Multiplier
 │
 ├── README.md
+├── LICENSE
 ├── .gitignore
+├── multiplier_sim
 │
-|-- multiplier_sim
 ├── rtl
 │   ├── ICG.v
 │   ├── bit_counter.v
@@ -221,36 +247,56 @@ DFT-Sequential-Multiplier
 │
 └── vcd
     ├── seq_mult_dft.vcd
-    ├── multiplier_tb_gtk.vcd
+    └── multiplier_tb_gtk.vcd
 ```
 
 ---
 
-## Learning Outcomes
+# Project Highlights
 
-This project demonstrates practical implementation of:
-
-* Register Transfer Level (RTL) Design
-* Finite State Machine (FSM) Design
-* Design for Testability (DFT)
-* Full Scan Chain Insertion
-* Clock Controllability
-* Integrated Clock Gating (ICG)
-* Scan Shift and Capture Operations
-* ATPG-Oriented Verification
-* Digital ASIC Verification using Verilog
+- Functional 8-bit Sequential Multiplier
+- Low-Power Clock Gating using Integrated Clock Gate (ICG)
+- Clock Controllability for Manufacturing Test
+- Complete 32-Bit Scan Chain Implementation
+- Scan Shift and Capture Operations
+- ATPG-Oriented DFT Architecture
+- Functional and DFT Verification using Verilog
+- Simulation Waveforms Included
 
 ---
 
-## Future Improvements
+# Learning Outcomes
 
-* Scan compression support
-* Boundary Scan (IEEE 1149.1/JTAG)
-* Multiple scan chains
-* Automatic Test Pattern Generation (ATPG)
-* Fault simulation
-* Synthesis and timing analysis using industry EDA tools
+This project demonstrates practical implementation of:
+
+- Register Transfer Level (RTL) Design
+- Finite State Machine (FSM) Design
+- Datapath and Controller Integration
+- Clock Gating for Low-Power Design
+- Design for Testability (DFT)
+- Clock Controllability
+- Full Scan Chain Insertion
+- Scan Shift and Capture Methodology
+- At-Speed Testing Concepts
+- ASIC Verification using Verilog HDL
+
+---
+
+# Future Improvements
+
+Potential extensions include:
+
+- Multiple Scan Chains
+- Scan Compression
+- IEEE 1149.1 Boundary Scan (JTAG)
+- Automatic Test Pattern Generation (ATPG)
+- Fault Simulation
+- Synthesis using Synopsys Design Compiler
+- Static Timing Analysis
+- Scan Insertion using Commercial DFT Tools
+
+---
 
 
 
-
+ility, scan chain insertion, and DFT-aware verification in Verilog HDL.
