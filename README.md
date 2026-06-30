@@ -208,6 +208,7 @@ DFT-Sequential-Multiplier
 ├── README.md
 ├── .gitignore
 │
+|-- multiplier_sim
 ├── rtl
 │   ├── ICG.v
 │   ├── bit_counter.v
@@ -218,10 +219,9 @@ DFT-Sequential-Multiplier
 ├── tb
 │   └── tb_seq_multiplier_dft.v
 │
-└── docs
-    ├── architecture.png
-    ├── scan_chain.png
-    └── waveform.png
+└── vcd
+    ├── seq_mult_dft.vcd
+    ├── multiplier_tb_gtk.vcd
 ```
 
 ---
