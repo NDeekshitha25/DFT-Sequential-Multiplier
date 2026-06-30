@@ -1,0 +1,18 @@
+# Simulation outputs
+*.vcd
+*.vvp
+*.out
+*.log
+*.wlf
+*.vcd
+*.fst
+simv*
+csrc/
+DVEfiles/
+
+# GTKWave
+*.gtkw
+
+# Executables
+multiplier_sim
+sim
