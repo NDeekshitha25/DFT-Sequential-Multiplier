@@ -297,6 +297,3 @@ Potential extensions include:
 
 ---
 
-
-
-ility, scan chain insertion, and DFT-aware verification in Verilog HDL.
